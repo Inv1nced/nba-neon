@@ -1,5 +1,4 @@
 // Маршрутизация по #адресам и автообновление во время матчей.
-import { loadTeamColors } from './api.js';
 import { renderHome } from './view-home.js';
 import { renderGame } from './view-game.js';
 import { renderPlayer } from './view-player.js';
@@ -75,5 +74,4 @@ window.addEventListener('hashchange', route);
 
 startBackground(document.getElementById('space'));
 
-// цвета команд подгружаем заранее, но не дольше 2,5 секунд
-Promise.race([loadTeamColors(), new Promise(r => setTimeout(r, 2500))]).finally(route);
+route();

@@ -12,8 +12,6 @@ const ROUTES = [
   u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
   u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
 ];
-let preferredRoute = 0;
-try { preferredRoute = Number(sessionStorage.getItem('nba-route') || 0) || 0; } catch { /* приватный режим */ }
 
 const mem = new Map();
 
@@ -37,15 +35,10 @@ export async function getJSON(url, ttl = 30_000) {
   const hit = mem.get(url);
   if (hit && Date.now() - hit.t < ttl) return hit.data;
 
-  const order = [preferredRoute, ...ROUTES.keys()].filter((v, i, a) => a.indexOf(v) === i);
   let lastErr;
-  for (const i of order) {
+  for (const make of ROUTES) {
     try {
-      const data = await fetchWithTimeout(ROUTES[i](url));
-      if (i !== preferredRoute) {
-        preferredRoute = i;
-        try { sessionStorage.setItem('nba-route', String(i)); } catch { /* ок */ }
-      }
+      const data = await fetchWithTimeout(make(url));
       mem.set(url, { t: Date.now(), data });
       return data;
     } catch (e) {
@@ -55,17 +48,6 @@ export async function getJSON(url, ttl = 30_000) {
   }
   if (hit) return hit.data; // лучше старые данные, чем пустой экран
   throw lastErr || new Error('Не удалось загрузить ' + url);
-}
-
-function lsGet(key, maxAge) {
-  try {
-    const v = JSON.parse(localStorage.getItem(key) || 'null');
-    if (v && Date.now() - v.t < maxAge) return v.data;
-  } catch { /* нет хранилища */ }
-  return null;
-}
-function lsSet(key, data) {
-  try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), data })); } catch { /* ок */ }
 }
 
 // ---------- мелкие помощники ----------
@@ -310,21 +292,6 @@ export async function standings() {
   });
   confs.sort(a => (a.key === 'East' ? -1 : 1));
   return { season: json.seasons?.[0]?.displayName || '', confs };
-}
-
-// цвета всех команд одним запросом — чтобы таблица и карточки были в фирменных цветах
-export async function loadTeamColors() {
-  let teams = lsGet('nba-teams', 7 * 86400_000);
-  if (!teams) {
-    try {
-      const json = await getJSON(`${SITE}/teams`, 3600_000);
-      teams = (json.sports?.[0]?.leagues?.[0]?.teams || []).map(t => ({
-        id: t.team.id, color: t.team.color, alternateColor: t.team.alternateColor,
-      }));
-      lsSet('nba-teams', teams);
-    } catch { teams = []; }
-  }
-  teams.forEach(rememberTeam);
 }
 
 // ---------- команда ----------
