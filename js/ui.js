@@ -1,19 +1,31 @@
 // Общие кусочки интерфейса: значки команд, оценки, форматирование.
 import { matchRating, ratingTone } from './rating.js';
+import { teamEmblem, playerAvatar } from './avatar.js';
 
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export const teamVars = t => `--c1:${t.c1};--c2:${t.c2};--glow:${t.glow}`;
 
-// Значок команды — светящаяся «планета» в цветах клуба с орбитой.
+// Значок команды — вытянутый шестиугольник в цветах клуба со своим узором.
 // Официальные логотипы не используем: это оригинальный значок по аббревиатуре.
 export function badge(t, size = 'md', { orbit = true, link = false } = {}) {
+  const anim = orbit && !['xs', 'sm'].includes(size);
   const inner = `
-    <span class="badge badge--${size}" style="${teamVars(t)}" aria-hidden="true">
-      ${orbit ? '<span class="badge__orbit"><span class="badge__moon"></span></span>' : ''}
-      <span class="badge__core"><span class="badge__abbr${t.abbr.length > 3 ? ' badge__abbr--long' : ''}">${esc(t.abbr)}</span></span>
+    <span class="badge badge--${size}${anim ? ' badge--anim' : ''}" style="${teamVars(t)}" aria-hidden="true">
+      <span class="badge__ring"></span>
+      <span class="badge__core">${teamEmblem(t)}</span>
     </span>`;
   return link ? `<a class="badge-link" href="#/team/${t.id}" aria-label="${esc(t.full)}">${inner}</a>` : inner;
+}
+
+// Аватарка игрока: шестиугольник с силуэтом, номером и узором по id игрока.
+export function avatar(p, t, size = 'md') {
+  return `<span class="pav pav--${size}" style="${teamVars(t)}" aria-hidden="true">${playerAvatar({ id: p.id, label: p.jersey !== '' && p.jersey != null ? p.jersey : initials(p.name), team: t })}</span>`;
+}
+
+export function initials(name = '') {
+  const parts = String(name).replace(/ (Jr\.|Sr\.|II|III|IV)$/, '').split(' ').filter(Boolean);
+  return ((parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')).toUpperCase();
 }
 
 export function ratingPill(s, { big = false } = {}) {
@@ -91,3 +103,25 @@ export function errorBox(err, retryLabel = 'Повторить') {
 export const fix1 = v => (Math.round(v * 10) / 10).toFixed(1);
 export const pctText = (a, b) => (b > 0 ? Math.round((a / b) * 100) + '%' : '—');
 export const signed = v => (v > 0 ? '+' + v : String(v));
+
+// Сортировка таблиц по клику на заголовок (значения берутся из data-атрибутов строк)
+export function bindSort(root) {
+  root.querySelectorAll('table[data-sortable]').forEach(table => {
+    const tbody = table.tBodies[0];
+    let current = null, dir = -1;
+    const sortBy = th => {
+      const key = th.dataset.key;
+      dir = current === key ? -dir : (key === 'i' ? 1 : -1);
+      current = key;
+      const rows = [...tbody.rows];
+      rows.sort((a, b) => (parseFloat(a.dataset[key]) - parseFloat(b.dataset[key])) * dir);
+      rows.forEach(r => tbody.appendChild(r));
+      table.querySelectorAll('th[data-key]').forEach(h => h.removeAttribute('aria-sort'));
+      th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending');
+    };
+    table.querySelectorAll('thead th[data-key]').forEach(th => {
+      th.addEventListener('click', () => sortBy(th));
+      th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sortBy(th); } });
+    });
+  });
+}

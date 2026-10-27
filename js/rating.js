@@ -185,10 +185,10 @@ export function playerProfile(seasons, age, seasonYear = currentSeasonYear()) {
 }
 
 export function tierOf(ovr) {
-  if (ovr >= 90) return { key: 'galaxy', name: 'Суперзвезда' };
-  if (ovr >= 85) return { key: 'star', name: 'Звезда' };
-  if (ovr >= 80) return { key: 'gold', name: 'Сильный стартер' };
-  if (ovr >= 75) return { key: 'silver', name: 'Стартер' };
+  if (ovr >= 93) return { key: 'galaxy', name: 'Суперзвезда' };
+  if (ovr >= 87) return { key: 'star', name: 'Звезда' };
+  if (ovr >= 81) return { key: 'gold', name: 'Сильный стартер' };
+  if (ovr >= 76) return { key: 'silver', name: 'Стартер' };
   if (ovr >= 70) return { key: 'bronze', name: 'Игрок ротации' };
   return { key: 'iron', name: 'Резерв' };
 }

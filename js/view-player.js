@@ -5,7 +5,7 @@ import {
   playerProfile, tierOf, growthText, ATTR_LABELS, breakdown, matchRating, ratingTone, verdict,
   trueShooting, currentSeasonYear, plural,
 } from './rating.js';
-import { badge, esc, posRu, fmtDate, loading, errorBox, teamVars, ratingPill, signed, pctText, fix1 } from './ui.js';
+import { badge, avatar, esc, posRu, fmtDate, loading, errorBox, teamVars, ratingPill, signed, pctText, fix1 } from './ui.js';
 
 const COUNTRY_RU = { USA: 'США', Canada: 'Канада', France: 'Франция', Serbia: 'Сербия', Germany: 'Германия', Australia: 'Австралия', Spain: 'Испания', Greece: 'Греция', Slovenia: 'Словения', Cameroon: 'Камерун', Nigeria: 'Нигерия', Lithuania: 'Литва', Latvia: 'Латвия', Turkey: 'Турция', Croatia: 'Хорватия', Italy: 'Италия', Japan: 'Япония', China: 'Китай', 'Dominican Republic': 'Доминикана', Bahamas: 'Багамы', 'Bosnia and Herzegovina': 'Босния и Герцеговина', Montenegro: 'Черногория', Brazil: 'Бразилия', Argentina: 'Аргентина', 'New Zealand': 'Новая Зеландия', 'South Sudan': 'Южный Судан', Senegal: 'Сенегал', 'United Kingdom': 'Великобритания', England: 'Англия', Russia: 'Россия', Ukraine: 'Украина', Georgia: 'Грузия', Israel: 'Израиль', 'Czech Republic': 'Чехия', Finland: 'Финляндия', Sweden: 'Швеция', Austria: 'Австрия', Switzerland: 'Швейцария', Netherlands: 'Нидерланды', Belgium: 'Бельгия', Poland: 'Польша', Mali: 'Мали', 'DR Congo': 'ДР Конго', Sudan: 'Судан' };
 
@@ -97,7 +97,7 @@ function card(a, team, prof) {
         <div class="pcard__pos">${esc(a.pos || '')}</div>
         ${badge(team, 'sm', { orbit: false })}
       </div>
-      <div class="pcard__num" aria-hidden="true">${esc(a.jersey)}</div>
+      <div class="pcard__avatar">${avatar({ id: a.id, jersey: a.jersey, name: a.name }, team, 'xl')}</div>
       <div class="pcard__name"><span>${esc(a.first)}</span>${esc(a.last || a.name)}</div>
       <div class="pcard__tier">${esc(tier.name)}</div>
       ${prof ? `

@@ -1,7 +1,7 @@
 // Страница матча: счёт, площадка со стартовыми пятёрками, скамейка, лучшие, бокс-скор.
 import { gameSummary } from './api.js';
 import { matchRating, ratingTone, gameScore, plural } from './rating.js';
-import { badge, esc, ratingPill, statusText, fmtDate, fmtTime, liveDot, loading, errorBox, periodName, teamVars, pctText, signed } from './ui.js';
+import { badge, avatar, bindSort, esc, ratingPill, statusText, fmtDate, fmtTime, liveDot, loading, errorBox, periodName, teamVars, pctText, signed } from './ui.js';
 
 // ---------- площадка ----------
 
@@ -58,7 +58,7 @@ function chip(p, g, t, slot, side) {
   const s = p.s;
   return `
     <a class="chip" href="${playerHref(p, g, t)}" style="--x:${lx}%;--y:${y}%;--px:${y}%;--py:${py}%;${teamVars(t)}">
-      <span class="chip__num">${esc(p.jersey)}</span>
+      ${avatar(p, t, 'md')}
       ${s ? `<span class="chip__rate">${ratingPill(s)}</span>` : ''}
       <span class="chip__name">${esc(surname(p))}</span>
       ${s ? `<span class="chip__line">${s.pts}/${s.reb}/${s.ast}</span>` : ''}
@@ -103,12 +103,12 @@ function bench(g, t) {
   if (!list.length) return '';
   const rows = list.map(p => p.dnp
     ? `<li class="bench__row is-dnp" title="${esc(p.reason)}">
-         <span class="bench__num">${esc(p.jersey)}</span>
+         ${avatar(p, t, 'xs')}
          <span class="bench__name">${esc(p.name)}</span>
          <span class="bench__dnp">${esc(reasonRu(p.reason))}</span>
        </li>`
     : `<li><a class="bench__row" href="${playerHref(p, g, t)}">
-         <span class="bench__num">${esc(p.jersey)}</span>
+         ${avatar(p, t, 'xs')}
          <span class="bench__name">${esc(p.name)}<small>${Math.round(p.s.min)} мин</small></span>
          <span class="bench__line">${p.s.pts}/${p.s.reb}/${p.s.ast}</span>
          ${ratingPill(p.s)}
@@ -139,7 +139,7 @@ function best(g) {
         ${top.map(({ p, t, r }, i) => `
           <a class="podium__item${i === 0 ? ' podium__item--mvp' : ''}" href="${playerHref(p, g, t)}" style="${teamVars(t)}">
             ${i === 0 ? `<span class="podium__crown">${done ? 'MVP матча' : 'Лидер матча'}</span>` : ''}
-            ${ratingPill(p.s, { big: true })}
+            <span class="podium__av">${avatar(p, t, 'lg')}${ratingPill(p.s, { big: true })}</span>
             <span class="podium__name">${esc(p.name)}</span>
             <span class="podium__team">${badge(t, 'xs', { orbit: false })} ${esc(t.name)}</span>
             <span class="podium__line">${p.s.pts} очк., ${p.s.reb} подб., ${p.s.ast} перед.</span>
@@ -240,27 +240,6 @@ function boxTable(g, t) {
         </table>
       </div>
     </div>`;
-}
-
-function bindSort(root) {
-  root.querySelectorAll('table[data-sortable]').forEach(table => {
-    const tbody = table.tBodies[0];
-    let current = null, dir = -1;
-    const sortBy = th => {
-      const key = th.dataset.key;
-      dir = current === key ? -dir : (key === 'i' ? 1 : -1);
-      current = key;
-      const rows = [...tbody.rows];
-      rows.sort((a, b) => (parseFloat(a.dataset[key]) - parseFloat(b.dataset[key])) * dir);
-      rows.forEach(r => tbody.appendChild(r));
-      table.querySelectorAll('th[data-key]').forEach(h => h.removeAttribute('aria-sort'));
-      th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending');
-    };
-    table.querySelectorAll('thead th[data-key]').forEach(th => {
-      th.addEventListener('click', () => sortBy(th));
-      th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sortBy(th); } });
-    });
-  });
 }
 
 // ---------- шапка ----------

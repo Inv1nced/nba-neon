@@ -473,3 +473,65 @@ export async function athleteCareer(id) {
 }
 
 export { num };
+
+// ---------- статистика всей лиги (для рейтинга сезона) ----------
+
+const LEAGUE = 'https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete';
+
+function parseLeague(json, year) {
+  const cats = json.categories || [];
+  return (json.athletes || []).map(row => {
+    const a = row.athlete || {};
+    const v = {};
+    (row.categories || []).forEach((c, ci) => {
+      const names = cats.find(x => x.name === c.name)?.names || cats[ci]?.names || [];
+      names.forEach((n, i) => { if (v[n] == null) v[n] = c.values?.[i] ?? num(c.totals?.[i]); });
+    });
+    const team = a.teams?.find(t => String(t.id) === String(a.teamId)) || a.teams?.[0];
+    if (team) rememberTeam(team);
+    const reb = v.avgRebounds || 0;
+    return {
+      id: String(a.id),
+      name: a.displayName || '',
+      short: a.shortName || a.displayName || '',
+      age: a.age || null,
+      pos: a.position?.abbreviation || '',
+      teamId: a.teamId ? String(a.teamId) : (team ? String(team.id) : null),
+      year,
+      label: '',
+      gp: v.gamesPlayed || 0,
+      min: v.avgMinutes || 0,
+      pts: v.avgPoints || 0,
+      fgm: v.avgFieldGoalsMade || 0, fga: v.avgFieldGoalsAttempted || 0,
+      tpm: v.avgThreePointFieldGoalsMade || 0, tpa: v.avgThreePointFieldGoalsAttempted || 0,
+      ftm: v.avgFreeThrowsMade || 0, fta: v.avgFreeThrowsAttempted || 0,
+      reb,
+      // в общей статистике лиги нет деления подборов — берём типичную долю: четверть в нападении
+      oreb: reb * 0.25, dreb: reb * 0.75,
+      ast: v.avgAssists || 0, tov: v.avgTurnovers || 0,
+      stl: v.avgSteals || 0, blk: v.avgBlocks || 0,
+      pf: v.avgFouls || 0,
+    };
+  });
+}
+
+export async function leagueSeason(year) {
+  const sort = '&sort=offensive.avgPoints:desc';
+  const [cur, prev1, prev2] = await Promise.allSettled([
+    getJSON(`${LEAGUE}?limit=500${sort}`, 20 * 60_000),
+    getJSON(`${LEAGUE}?limit=500&season=${year - 1}&seasontype=2${sort}`, 6 * 3600_000),
+    getJSON(`${LEAGUE}?limit=500&page=2&season=${year - 1}&seasontype=2${sort}`, 6 * 3600_000),
+  ]);
+  if (cur.status === 'rejected') throw cur.reason;
+  const curYear = cur.value.requestedSeason?.year || year;
+  const prev = new Map();
+  for (const r of [prev1, prev2]) {
+    if (r.status !== 'fulfilled') continue;
+    for (const p of parseLeague(r.value, curYear - 1)) if (!prev.has(p.id)) prev.set(p.id, p);
+  }
+  return {
+    season: cur.value.requestedSeason?.displayName || '',
+    year: curYear,
+    players: parseLeague(cur.value, curYear).map(p => ({ cur: p, prev: prev.get(p.id) || null })),
+  };
+}

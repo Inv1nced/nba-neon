@@ -4,6 +4,7 @@ import { renderHome } from './view-home.js';
 import { renderGame } from './view-game.js';
 import { renderPlayer } from './view-player.js';
 import { renderStandings, renderTeam, renderAbout } from './view-league.js';
+import { renderIndex } from './view-index.js';
 import { startBackground } from './bg.js';
 
 const root = document.getElementById('app');
@@ -14,6 +15,9 @@ const routes = [
   [/^#\/day\/(\d{8})$/, renderHome, m => ({ day: m[1] }), 'games'],
   [/^#\/game\/(\d+)$/, renderGame, m => ({ id: m[1] }), 'games'],
   [/^#\/player\/(\d+)(?:\?(.*))?$/, renderPlayer, m => ({ id: m[1], ...Object.fromEntries(new URLSearchParams(m[2] || '')) }), 'games'],
+  [/^#\/index$/, renderIndex, () => ({}), 'index'],
+  [/^#\/index\/day\/(\d{8})$/, renderIndex, m => ({ day: m[1] }), 'index'],
+  [/^#\/index\/season$/, renderIndex, () => ({ mode: 'season' }), 'index'],
   [/^#\/standings$/, renderStandings, () => ({}), 'standings'],
   [/^#\/team\/(\d+)$/, renderTeam, m => ({ id: m[1] }), 'standings'],
   [/^#\/about$/, renderAbout, () => ({}), 'about'],

@@ -1,7 +1,7 @@
 // Таблица конференций, страница команды и описание формул.
 import { standings, teamRoster, teamSchedule } from './api.js';
 import { teamInfo } from './teams.js';
-import { badge, esc, posRu, fmtDate, fmtTime, loading, errorBox, teamVars, statusText, liveDot } from './ui.js';
+import { badge, avatar, esc, posRu, fmtDate, fmtTime, loading, errorBox, teamVars, statusText, liveDot } from './ui.js';
 import { plural } from './rating.js';
 
 function confTable(conf) {
@@ -120,7 +120,7 @@ export async function renderTeam(root, params) {
           <h2 class="panel__title">Состав</h2>
           ${roster.length ? `<div class="roster">${roster.map(p => `
             <a class="roster__item" href="#/player/${p.id}?team=${team.id}" style="${teamVars(team)}">
-              <span class="roster__num">${esc(p.jersey)}</span>
+              ${avatar(p, team, 'sm')}
               <span class="roster__name">${esc(p.name)}${p.injured ? ' <em title="В списке травмированных">травма</em>' : ''}</span>
               <span class="roster__meta">${esc(posRu(p.pos))}${p.age ? `, ${p.age} ${plural(p.age, 'год', 'года', 'лет')}` : ''}</span>
             </a>`).join('')}</div>` : '<p class="muted">Состав сейчас недоступен.</p>'}
@@ -153,7 +153,7 @@ export function renderAbout(root) {
     </section>
     <section class="panel prose">
       <h2 class="panel__title">Рейтинг игрока (как в NBA 2K)</h2>
-      <p>Берём средние показатели за сезон, считаем по ним Game Score и переводим в шкалу 40–99: <span class="formula">64 + 1,4·Game Score</span>. Игрок ротации — около 70, крепкий стартер — 80, звезда — 85+, уровень MVP — 97–99.</p>
+      <p>Берём средние показатели за сезон, считаем по ним Game Score и переводим в шкалу 40–99: <span class="formula">64 + 1,4·Game Score</span>. Игрок ротации — около 70, стартер — 76+, сильный стартер — 81+, звезда — 87+, суперзвезда — 93+.</p>
       <p>В начале сезона пара матчей мало что значит, поэтому текущий сезон смешивается с прошлым: вес текущего равен <span class="formula">игры / (игры + 12)</span>. У новичков вместо прошлого сезона — уровень среднего новичка.</p>
       <h3 class="sub">Атрибуты</h3>
       <ul>
@@ -166,6 +166,11 @@ export function renderAbout(root) {
       </ul>
       <h3 class="sub">Потенциал и рост</h3>
       <p>Потенциал — это рейтинг плюс запас по возрасту: до 19 лет +14, в 22 года +8, в 25 лет +3, после 27 запаса нет. Если молодой игрок прибавил к прошлому сезону, потенциал ещё немного растёт. График «Как растёт» показывает рейтинг за каждый сезон карьеры.</p>
+    </section>
+    <section class="panel prose">
+      <h2 class="panel__title">Вкладка «Индекс»</h2>
+      <p>«Лучшие за день» собирает всех игроков, сыгравших 8+ минут, из всех матчей игрового дня и сортирует по индексу полезности. «Провалы дня» — самые низкие оценки среди тех, кто провёл на площадке 20+ минут.</p>
+      <p>«Рейтинг сезона» считает рейтинг, потенциал и атрибуты для всей лиги по средним за сезон. В общей статистике ESPN подборы не делятся на подборы в нападении и в защите, поэтому там берётся типичная доля: четверть в нападении. Из-за этого рейтинг в списке может отличаться от карточки игрока на 1–2 пункта.</p>
     </section>
     <section class="panel prose">
       <h2 class="panel__title">Откуда данные</h2>
