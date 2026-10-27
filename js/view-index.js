@@ -19,10 +19,12 @@ function tabs(active) {
 
 async function collectDay(day) {
   let sb = await scoreboard(day || null);
+  let shown = day || (sb.day || '').replace(/-/g, '');
   let started = sb.events.filter(e => e.status.state !== 'pre');
   // днём по Москве у ESPN уже «новый» день без сыгранных матчей — показываем прошедшую ночь
-  if (!day && !started.length && sb.day) {
-    sb = await scoreboard(ymdShift(sb.day.replace(/-/g, ''), -1));
+  if (!day && !started.length && shown) {
+    shown = ymdShift(shown, -1);
+    sb = await scoreboard(shown);
     started = sb.events.filter(e => e.status.state !== 'pre');
   }
   const games = (await Promise.allSettled(started.map(e => gameSummary(e.id, e.status.state === 'in'))))
@@ -38,7 +40,7 @@ async function collectDay(day) {
       }
     }
   }
-  return { day: (sb.day || '').replace(/-/g, '') || day, rows, games, live: games.some(g => g.status.state === 'in'), total: sb.events.length };
+  return { day: (sb.day || '').replace(/-/g, '') || shown, rows, games, live: games.some(g => g.status.state === 'in'), total: sb.events.length };
 }
 
 const href = row => `#/player/${row.p.id}?game=${row.g.id}&team=${row.t.id}`;
