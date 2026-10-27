@@ -265,7 +265,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 .day__title::first-letter { text-transform: uppercase; }
 .day__sub { margin: 8px 0 0; color: var(--muted); }
-.day__live { margin: 8px 0 0; display: flex; justify-content: center; gap: 8px; align-items: center; color: var(--ink); font-weight: 600; }
+.day__live { margin: 8px 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; align-items: center; color: var(--ink); font-weight: 600; text-align: center; }
 .day__nav {
   display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%;
   text-decoration: none; font-size: 28px; line-height: 1; color: var(--ink);
