@@ -81,6 +81,7 @@ export async function renderHome(root, params, ctx) {
         <p class="updated">Данные ESPN, обновлено в ${new Date().toLocaleTimeString('ru-RU')}</p>
       </section>`;
 
+    if (root.isConnected) document.title = 'NBA Neon — матчи, составы и рейтинги игроков';
     ctx.setLive(liveCount > 0 || evs.some(e => e.status.state === 'pre' && new Date(e.date) - Date.now() < 15 * 60_000));
   };
 

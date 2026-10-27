@@ -56,7 +56,7 @@ export async function renderStandings(root) {
         <p class="legend"><span class="lg lg--po"></span>1–6 — прямо в плей-офф <span class="lg lg--pi"></span>7–10 — плей-ин</p>
       </header>
       <div class="confs">${data.confs.map(confTable).join('')}</div>`;
-    document.title = 'Таблица — NBA Neon';
+    if (root.isConnected) document.title = 'Таблица — NBA Neon';
   };
   await draw();
 }
@@ -126,7 +126,7 @@ export async function renderTeam(root, params) {
             </a>`).join('')}</div>` : '<p class="muted">Состав сейчас недоступен.</p>'}
         </section>
       </div>`;
-    document.title = `${team.full} — NBA Neon`;
+    if (root.isConnected) document.title = `${team.full} — NBA Neon`;
   };
   await draw();
 }
@@ -176,5 +176,5 @@ export function renderAbout(root) {
       <h2 class="panel__title">Откуда данные</h2>
       <p>Счёт, составы и статистика — из открытого API ESPN, напрямую в браузере. Во время матчей страница обновляется каждые 20 секунд. Значки команд — собственный дизайн по аббревиатурам и цветам клубов; сайт не связан с НБА и ESPN.</p>
     </section>`;
-  document.title = 'Как считаем — NBA Neon';
+  if (root.isConnected) document.title = 'Как считаем — NBA Neon';
 }

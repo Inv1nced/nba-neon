@@ -31,7 +31,7 @@ function makeCtx(id) {
     live: false,
     isRefresh: false,
     onRefresh(fn) { c.refresh = fn; },
-    setLive(v) { c.live = !!v; document.body.classList.toggle('is-live', c.live); },
+    setLive(v) { if (id !== navId) return; c.live = !!v; document.body.classList.toggle('is-live', c.live); },
     get current() { return id === navId; },
   };
   return c;
@@ -46,11 +46,16 @@ async function route() {
   const [re, view, params, section] = found;
   document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('is-active', a.dataset.nav === section));
   window.scrollTo(0, 0);
+  // каждая страница рисуется в свой контейнер: если медленная загрузка закончится
+  // после перехода на другую вкладку, она допишет в уже отключённый элемент и ничего не сломает
+  const page = document.createElement('div');
+  page.className = 'page';
+  root.replaceChildren(page);
   try {
-    await view(root, params(hash.match(re) || []), ctx);
+    await view(page, params(hash.match(re) || []), ctx);
   } catch (e) {
     console.error(e);
-    if (id === navId) root.innerHTML = `<div class="state state--error"><p>Что-то сломалось при отрисовке страницы. Обнови её.</p></div>`;
+    if (id === navId) page.innerHTML = `<div class="state state--error"><p>Что-то сломалось при отрисовке страницы. Обнови её.</p></div>`;
   }
   root.focus({ preventScroll: true });
 }

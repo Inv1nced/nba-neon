@@ -142,8 +142,8 @@ async function renderDay(root, params, ctx) {
       </section>` : `<div class="state"><p>Индекс появится, когда начнутся матчи. Листай на прошедшие дни стрелкой влево.</p></div>`}
       <p class="updated">Обновлено в ${new Date().toLocaleTimeString('ru-RU')}. <a href="#/about">Как считается индекс</a></p>`;
     bindSort(root);
-    if (ctx.isRefresh) window.scrollTo(0, keepScroll);
-    document.title = 'Индекс дня — NBA Neon';
+    if (ctx.isRefresh && root.isConnected) window.scrollTo(0, keepScroll);
+    if (root.isConnected) document.title = 'Индекс дня — NBA Neon';
     ctx.setLive(data.live);
   };
   ctx.onRefresh(draw);
@@ -229,7 +229,7 @@ async function renderSeason(root, params, ctx) {
   root.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => { state.sort = b.dataset.sort; state.shown = 30; drawList(); }));
   root.querySelector('[data-more]').addEventListener('click', () => { state.shown += 30; drawList(); });
   drawList();
-  document.title = 'Рейтинг сезона — NBA Neon';
+  if (root.isConnected) document.title = 'Рейтинг сезона — NBA Neon';
 }
 
 export async function renderIndex(root, params, ctx) {

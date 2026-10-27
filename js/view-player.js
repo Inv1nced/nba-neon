@@ -299,7 +299,7 @@ export async function renderPlayer(root, params) {
         ${seasonTable(prof, seasons)}
       </section>` : `
       <section class="panel"><p class="lead">У игрока пока нет сыгранных матчей в регулярном чемпионате НБА — рейтинг появится после первых игр.</p></section>`}`;
-    document.title = `${a.name} — NBA Neon`;
+    if (root.isConnected) document.title = `${a.name} — NBA Neon`;
   };
   await draw();
 }

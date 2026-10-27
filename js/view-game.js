@@ -316,8 +316,8 @@ export async function renderGame(root, params, ctx) {
       ${body}
       <p class="updated">${g.status.state === 'in' ? 'Матч идёт — страница обновляется сама каждые 20 секунд. ' : ''}Обновлено в ${new Date().toLocaleTimeString('ru-RU')}</p>`;
     bindSort(root);
-    if (ctx.isRefresh) window.scrollTo(0, keepScroll);
-    document.title = `${g.away.team.abbr} ${g.away.score ?? ''}:${g.home.score ?? ''} ${g.home.team.abbr} — NBA Neon`;
+    if (ctx.isRefresh && root.isConnected) window.scrollTo(0, keepScroll);
+    if (root.isConnected) document.title = `${g.away.team.abbr} ${g.away.score ?? ''}:${g.home.score ?? ''} ${g.home.team.abbr} — NBA Neon`;
     ctx.setLive(g.status.state === 'in' || (g.status.state === 'pre' && new Date(g.date) - Date.now() < 15 * 60_000));
   };
   ctx.onRefresh(draw);
