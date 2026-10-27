@@ -154,6 +154,17 @@ export function playerAvatar({ id, label = '', team }) {
   </svg>`;
 }
 
+// грани «кристалла»: свет падает сверху слева, поэтому верхние грани светлее, нижние темнее
+const FACET_LIGHT = [0.2, 0.08, -0.12, -0.22, -0.08, 0.12];
+function facets() {
+  const v = HEX.split(' ').map(p => p.split(',').map(Number));
+  return v.map((p, i) => {
+    const q = v[(i + 1) % 6];
+    const k = FACET_LIGHT[i];
+    return `<polygon points="50,62 ${p[0]},${p[1]} ${q[0]},${q[1]}" fill="${k > 0 ? '#fff' : '#000'}" opacity="${Math.abs(k).toFixed(2)}"/>`;
+  }).join('');
+}
+
 // ---------- значок команды ----------
 
 export function teamEmblem(t) {
@@ -177,6 +188,7 @@ export function teamEmblem(t) {
     <g clip-path="url(#${gid}c)">
       <rect width="100" height="124" fill="url(#${gid}g)"/>
       <g opacity=".28">${pattern(kind, r, t.c2)}</g>
+      ${facets()}
       <polygon points="${HEX.split(' ').map(p => p.split(',').map(Number)).map(([x, y]) => `${50 + (x - 50) * 0.78},${62 + (y - 62) * 0.78}`).join(' ')}" fill="none" stroke="${t.c2}" stroke-width="2.5" opacity=".75"/>
       <text x="50" y="${62 + fs * 0.36}" text-anchor="middle" class="hx-abbr" font-size="${fs}" fill="#fff">${t.abbr}</text>
     </g>

@@ -199,9 +199,18 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 .badge__core { position: absolute; inset: max(1.5px, calc(var(--s) * .045)); clip-path: var(--hex); }
 .badge__core .hx-svg { display: block; width: 100%; height: 100%; }
-.badge--xl, .badge--xxl { animation: float 6s ease-in-out infinite; }
-.hero__team--home .badge--xl { animation-delay: -3s; }
-@keyframes float { 50% { transform: translateY(-8px); } }
+.badge__body { position: absolute; inset: 0; transform-style: preserve-3d; }
+
+/* большие значки покачиваются в 3D: грань и «кристалл» на разной глубине */
+.badge--lg .badge__body, .badge--xl .badge__body, .badge--xxl .badge__body { animation: sway 7s ease-in-out infinite; }
+.badge--lg .badge__core, .badge--xl .badge__core, .badge--xxl .badge__core { transform: translateZ(calc(var(--s) * .12)); }
+.hero__team--home .badge__body { animation-delay: -3.5s; }
+@keyframes sway {
+  0%, 100% { transform: perspective(520px) rotateY(-18deg) rotateX(4deg) translateY(0); }
+  50% { transform: perspective(520px) rotateY(18deg) rotateX(-4deg) translateY(-7px); }
+}
+.game:hover .badge__body { transform: perspective(400px) rotateY(-14deg); transition: transform .4s; }
+.game .badge__body { transition: transform .4s; }
 
 .hx-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hx-abbr { font-family: var(--display); font-weight: 900; letter-spacing: -.02em; paint-order: stroke; stroke: rgba(0, 0, 0, .45); stroke-width: 3px; }

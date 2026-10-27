@@ -12,8 +12,10 @@ export function badge(t, size = 'md', { orbit = true, link = false } = {}) {
   const anim = orbit && !['xs', 'sm'].includes(size);
   const inner = `
     <span class="badge badge--${size}${anim ? ' badge--anim' : ''}" style="${teamVars(t)}" aria-hidden="true">
-      <span class="badge__ring"></span>
-      <span class="badge__core">${teamEmblem(t)}</span>
+      <span class="badge__body">
+        <span class="badge__ring"></span>
+        <span class="badge__core">${teamEmblem(t)}</span>
+      </span>
     </span>`;
   return link ? `<a class="badge-link" href="#/team/${t.id}" aria-label="${esc(t.full)}">${inner}</a>` : inner;
 }
