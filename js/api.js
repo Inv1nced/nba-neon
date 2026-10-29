@@ -14,6 +14,12 @@ const ROUTES = [
 ];
 
 const mem = new Map();
+const freshness = new WeakMap();
+export const dataFreshness = data => freshness.get(data) || { fetchedAt: null, stale: false };
+export function combineFreshness(items, partial = false) {
+  const stamps = items.map(x => x?.fetchedAt).filter(Number.isFinite);
+  return { fetchedAt: stamps.length ? Math.min(...stamps) : null, stale: partial || items.some(x => x?.stale) };
+}
 
 async function fetchWithTimeout(url, ms = 12000) {
   const ctrl = new AbortController();
@@ -39,14 +45,19 @@ export async function getJSON(url, ttl = 30_000) {
   for (const make of ROUTES) {
     try {
       const data = await fetchWithTimeout(make(url));
-      mem.set(url, { t: Date.now(), data });
+      const t = Date.now();
+      mem.set(url, { t, data });
+      freshness.set(data, { fetchedAt: t, stale: false });
       return data;
     } catch (e) {
       lastErr = e;
       if (e.status === 404) break; // такого ресурса нет — прокси не помогут
     }
   }
-  if (hit) return hit.data; // лучше старые данные, чем пустой экран
+  if (hit) {
+    freshness.set(hit.data, { fetchedAt: hit.t, stale: true });
+    return hit.data;
+  }
   throw lastErr || new Error('Не удалось загрузить ' + url);
 }
 
@@ -148,7 +159,7 @@ export async function scoreboard(dateStr) {
     };
   });
   events.sort((a, b) => new Date(a.date) - new Date(b.date));
-  return { day: json.day?.date || null, events };
+  return { day: json.day?.date || null, events, freshness: dataFreshness(json) };
 }
 
 // ---------- матч целиком ----------
@@ -243,6 +254,7 @@ export async function gameSummary(id, live = false) {
   const [away, home] = pairOf(awayC, homeC);
   return {
     id: String(id),
+    freshness: dataFreshness(json),
     date: comp.date,
     status: statusOf(comp.status),
     home,
@@ -497,8 +509,10 @@ export async function leagueSeason(year) {
     for (const p of parseLeague(r.value, curYear - 1)) if (!prev.has(p.id)) prev.set(p.id, p);
   }
   return {
+    freshness: combineFreshness([cur, prev1, prev2].filter(r => r.status === 'fulfilled').map(r => dataFreshness(r.value)), [prev1, prev2].some(r => r.status === 'rejected')),
     season: cur.value.requestedSeason?.displayName || '',
     year: curYear,
     players: parseLeague(cur.value, curYear).map(p => ({ cur: p, prev: prev.get(p.id) || null })),
   };
 }
+

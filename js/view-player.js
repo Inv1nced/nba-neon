@@ -1,4 +1,5 @@
 // Карточка игрока: рейтинг в духе 2K, атрибуты, биография, рост по сезонам и разбор матча.
+import { ratingGuide } from './ui.js';
 import { athlete, athleteCareer, gameSummary } from './api.js';
 import { teamInfo, TEAMS } from './teams.js';
 import {
@@ -286,6 +287,7 @@ export async function renderPlayer(root, params) {
         </div>
         ${prof ? `<div class="player__radar">${radar(prof.attrs)}<p class="hint">Атрибуты по среднестатистическим показателям: ${esc(prof.basis)}.</p></div>` : ''}
       </section>
+      ${ratingGuide(prof)}
       ${g && gp ? gameBlock(gp, g, team, prof) : ''}
       ${prof ? `
       <section class="panel" style="${teamVars(team)}">
@@ -303,3 +305,4 @@ export async function renderPlayer(root, params) {
   };
   await draw();
 }
+

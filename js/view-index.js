@@ -1,5 +1,6 @@
 // Вкладка «Индекс»: лучшие и худшие игроки дня и рейтинг всей лиги за сезон.
-import { scoreboard, gameSummary, leagueSeason } from './api.js';
+import { freshnessNote, ratingGuide, dateControls, bindDateControls } from './ui.js';
+import { combineFreshness, scoreboard, gameSummary, leagueSeason } from './api.js';
 import { teamInfo } from './teams.js';
 import { matchRating, ratingTone, breakdown, playerProfile, tierOf, ATTR_LABELS, currentSeasonYear, plural } from './rating.js';
 import { badge, avatar, bindSort, esc, ratingPill, fmtYMD, ymdShift, liveDot, loading, errorBox, teamVars } from './ui.js';
@@ -40,7 +41,7 @@ async function collectDay(day) {
       }
     }
   }
-  return { day: (sb.day || '').replace(/-/g, '') || shown, rows, games, live: games.some(g => g.status.state === 'in'), total: sb.events.length };
+  return { freshness: combineFreshness([sb.freshness, ...games.map(g => g.freshness)], games.length < started.length), day: (sb.day || '').replace(/-/g, '') || shown, rows, games, live: games.some(g => g.status.state === 'in'), total: sb.events.length };
 }
 
 const href = row => `#/player/${row.p.id}?game=${row.g.id}&team=${row.t.id}`;
@@ -115,6 +116,8 @@ async function renderDay(root, params, ctx) {
 
     root.innerHTML = `
       ${tabs('day')}
+      ${ratingGuide()}
+      ${dateControls(day, '#/index/day/')}
       <section class="day day--compact">
         <header class="day__head">
           <a class="day__nav" href="#/index/day/${ymdShift(day, -1)}" aria-label="Предыдущий день">‹</a>
@@ -142,8 +145,9 @@ async function renderDay(root, params, ctx) {
         <p class="hint hint--top">Полоска «Вклад» показывает, из чего сложился индекс: <span class="lg-dot mini__scoring"></span>атака <span class="lg-dot mini__passing"></span>пас <span class="lg-dot mini__rebounding"></span>подбор <span class="lg-dot mini__defense"></span>защита <span class="lg-dot mini__mistakes"></span>ошибки. Заголовки столбцов сортируют таблицу.</p>
         ${dayTable(ok)}
       </section>` : `<div class="state"><p>Индекс появится, когда начнутся матчи. Листай на прошедшие дни стрелкой влево.</p></div>`}
-      <p class="updated">Обновлено в ${new Date().toLocaleTimeString('ru-RU')}. <a href="#/about">Как считается индекс</a></p>`;
+      ${freshnessNote(data.freshness)}`;
     bindSort(root);
+    bindDateControls(root);
     if (ctx.isRefresh && root.isConnected) window.scrollTo(0, keepScroll);
     if (root.isConnected) document.title = 'Индекс дня — NBA Neon';
     ctx.setLive(data.live);
@@ -219,6 +223,8 @@ async function renderSeason(root, params, ctx) {
 
   root.innerHTML = `
     ${tabs('season')}
+    ${ratingGuide()}
+    ${freshnessNote(data.freshness)}
     <section class="panel">
       <h2 class="panel__title">Рейтинг сезона ${esc(data.season)}</h2>
       <p class="hint hint--top">Рейтинг и атрибуты по средним за сезон, в начале сезона с учётом прошлого. В списке ${all.length} ${plural(all.length, 'игрок', 'игрока', 'игроков')}: 2+ матча и 10+ минут в среднем.</p>
@@ -238,3 +244,4 @@ export async function renderIndex(root, params, ctx) {
   if (params.mode === 'season') return renderSeason(root, params, ctx);
   return renderDay(root, params, ctx);
 }
+

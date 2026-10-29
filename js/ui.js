@@ -127,3 +127,31 @@ export function bindSort(root) {
     });
   });
 }
+
+
+// Время получения данных сохраняется при чтении кэша и сетевых ошибках.
+export function freshnessNote(meta) {
+  const stamp = meta?.fetchedAt ? new Date(meta.fetchedAt).toLocaleString('ru-RU') : 'неизвестно';
+  return `<p class="updated ${meta?.stale ? 'updated--stale' : ''}" role="status">${meta?.stale ? 'Обновление недоступно. Данные могут быть устаревшими или неполными. ' : ''}Данные ESPN получены: ${esc(stamp)}</p>`;
+}
+export function ratingGuide(prof = null) {
+  return `<details class="rating-guide"><summary>Как читать рейтинг и потенциал</summary>
+    <div><p><b>Авторская модель NBA Neon.</b> Оценка за матч — из 10, сезонный рейтинг — от 40 до 99. Это разные шкалы; они не являются официальными рейтингами НБА или NBA 2K.</p>
+    ${prof ? `<p><b>Основа оценки:</b> ${esc(prof.basis)}. ${prof.cur ? `Сыграно в текущем сезоне: ${prof.cur.gp}.` : ''}</p>` : ''}
+    <p>Рейтинг учитывает результативность и другие показатели протокола. В начале сезона он смешивается с прошлым сезоном, у новичков — с условным уровнем новичка. Мало матчей — оценка ещё может заметно измениться.</p>
+    <p><b>Потенциал — условная оценка:</b> рейтинг плюс прибавка за возраст и рост показателей. Это не прогноз будущей карьеры. Защита без перехватов и блоков, роль в команде и контекст матча отражаются лишь частично.</p>
+    <a href="#/about">Формулы и шкалы →</a></div></details>`;
+}
+export function gameDayToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()).replace(/-/g, '');
+}
+export function dateControls(day, prefix = '#/day/') {
+  const today = gameDayToday();
+  const val = /^\d{8}$/.test(day || '') ? `${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6)}` : '';
+  return `<div class="date-controls"><a href="${prefix}${today}" ${day === today ? 'aria-current="date"' : ''}>Сегодня</a><a href="${prefix}${ymdShift(today, -1)}">Вчера</a><label>Выбрать дату <input type="date" aria-label="Игровой день" value="${val}" data-date-prefix="${prefix}" min="1946-01-01" max="2100-12-31"></label><span>Игровой день · Нью-Йорк</span></div>`;
+}
+export function bindDateControls(root) {
+  root.querySelectorAll('[data-date-prefix]').forEach(input => input.addEventListener('change', () => {
+    if (input.value && input.validity.valid) location.hash = input.dataset.datePrefix + input.value.replace(/-/g, '');
+  }));
+}

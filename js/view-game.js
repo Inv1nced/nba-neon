@@ -1,4 +1,5 @@
 // Страница матча: счёт, площадка со стартовыми пятёрками, скамейка, лучшие, бокс-скор.
+import { freshnessNote, ratingGuide } from './ui.js';
 import { gameSummary } from './api.js';
 import { matchRating, ratingTone, gameScore, plural } from './rating.js';
 import { badge, avatar, bindSort, esc, ratingPill, statusText, fmtDate, fmtTime, liveDot, loading, errorBox, periodName, teamVars, pctText, signed } from './ui.js';
@@ -301,6 +302,7 @@ export async function renderGame(root, params, ctx) {
            <div class="benches">${bench(g, g.away.team)}${bench(g, g.home.team)}</div>
          </section>
          ${best(g)}
+         ${ratingGuide()}
          ${compare(g)}
          <section class="panel">
            <h2 class="panel__title">Полная статистика</h2>
@@ -314,7 +316,7 @@ export async function renderGame(root, params, ctx) {
       <a class="back" href="#/day/${new Date(new Date(g.date).getTime() - 5 * 3600_000).toISOString().slice(0, 10).replace(/-/g, '')}">‹ Все матчи дня</a>
       ${hero(g)}
       ${body}
-      <p class="updated">${g.status.state === 'in' ? 'Матч идёт — страница обновляется сама каждые 20 секунд. ' : ''}Обновлено в ${new Date().toLocaleTimeString('ru-RU')}</p>`;
+      ${freshnessNote(g.freshness)}`;
     bindSort(root);
     if (ctx.isRefresh && root.isConnected) window.scrollTo(0, keepScroll);
     if (root.isConnected) document.title = `${g.away.team.abbr} ${g.away.score ?? ''}:${g.home.score ?? ''} ${g.home.team.abbr} — NBA Neon`;
@@ -325,3 +327,4 @@ export async function renderGame(root, params, ctx) {
 }
 
 export { periodName, plural };
+
